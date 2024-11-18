@@ -17,7 +17,7 @@ data_folder = 'Endo_Data'
 if not os.path.exists(data_folder):
     os.makedirs(data_folder)
 
-# Create the full file path by joining the folder and filename.
+# Create the full file path by joining the folder and filename. 
 output_file = os.path.join(data_folder, filename)
 
 # Open the serial connection
