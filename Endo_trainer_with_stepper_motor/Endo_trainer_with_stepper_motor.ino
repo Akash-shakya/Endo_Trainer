@@ -33,7 +33,7 @@ void setup() {
   lcd.print("EndoTrainer Kit");  // Put text on the LCD
   delay(1000);
   lcd.clear();
-  lcd.print("Module : 1");
+  lcd.print("Module No : 1");
   lcd.setCursor(1,1);
   lcd.print("Start Training");
 }
