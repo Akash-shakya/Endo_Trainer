@@ -2,7 +2,7 @@
 
 #define dirPin 2
 #define stepPin 3
-#define stepsPerRevolution 72
+#define stepsPerRevolution 40 // 360 degree in 200 step,   72 degree in 40 step
 #define button 4
 
 // Variables for button debouncing
@@ -34,7 +34,7 @@ void setup() {
   delay(1000);
   lcd.clear();
   lcd.print("Module : 1");
-  lcd.setCursor(3,1);
+  lcd.setCursor(1,1);
   lcd.print("Start Training");
 }
 
@@ -55,7 +55,7 @@ void loop() {
       // If the button is pressed, move the motor:
       if (buttonState == HIGH) {
         count = count +1;
-        if(count<6)
+        if(count<7)
         {
           digitalWrite(dirPin, HIGH);  // Set direction to clockwise
           digitalWrite(redled, HIGH);  // Turn on LED 1
