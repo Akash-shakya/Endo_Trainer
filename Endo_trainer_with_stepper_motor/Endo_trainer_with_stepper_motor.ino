@@ -58,8 +58,8 @@ void loop() {
         if(count<7)
         {
           digitalWrite(dirPin, HIGH);  // Set direction to clockwise
-          digitalWrite(redled, HIGH);  // Turn on LED 1
-          digitalWrite(greenled, LOW);   // Turn off LED 2
+          digitalWrite(redled, HIGH);  
+          digitalWrite(greenled, LOW);  
           lcd.clear();
           lcd.print("Module changed");
           lcd.setCursor(3,1);
@@ -76,10 +76,12 @@ void loop() {
       if (count ==6)
       {
         count = 1;
+        digitalWrite(redled, LOW);  
+        digitalWrite(greenled, HIGH);
       }
       else {
-        digitalWrite(redled, LOW);  // Turn off LED 1
-        digitalWrite(greenled, HIGH); // Turn on LED 2
+        digitalWrite(redled, LOW);  
+        digitalWrite(greenled, HIGH); 
         digitalWrite(dirPin, LOW);   // Set direction to counterclockwise
         lcd.clear();
         lcd.print("Module No :");
