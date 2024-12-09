@@ -1,96 +1,98 @@
-#include <LiquidCrystal_I2C.h>
+// Define pin connections & motor's steps per revolution
+const int dirPin = 2;
+const int stepPin = 3;
+const int buttonPin = 4; // Define the push button pin
+const int anticlockwiseButtonPin = 5;
+const int stepsPerRevolution = 40;
 
-#define dirPin 2
-#define stepPin 3
-#define stepsPerRevolution 40 // 360 degree in 200 step,   72 degree in 40 step
-#define button 4
+// Variable to store the button state
+int buttonState = 0;
+int lastButtonState = 0;
 
-// Variables for button debouncing
-unsigned long lastDebounceTime = 0;  
-unsigned long debounceDelay = 50;  // 50ms debounce time
-int lastButtonState = LOW;  // previous button state
-int buttonState = LOW;  // current button state
+int anticlockwiseButtonState = 0;
+int lastAnticlockwiseButtonState = 0;
 
-int count = 1;
+bool motorRunning = false;
 
 // Define pins for the LEDs
 #define redled 12
 #define greenled 13
 
-// Add the lcd
-LiquidCrystal_I2C lcd(0x27, 16, 2);
+int count = 1;
 
-void setup() {
-  // Declare pins as output:
+void setup()
+{
+  // Declare pins as Outputs and Inputs
   pinMode(stepPin, OUTPUT);
   pinMode(dirPin, OUTPUT);
-  pinMode(button, INPUT);  // Set the button pin as input
+  pinMode(buttonPin, INPUT_PULLUP); // Use internal pull-up resistor
+  pinMode(anticlockwiseButtonPin, INPUT_PULLUP);
   pinMode(redled, OUTPUT);
   pinMode(greenled, OUTPUT);
-
-  lcd.init();
-  lcd.backlight();  // Turn on the LCD backlight
-  lcd.print("EndoTrainer Kit");  // Put text on the LCD
-  delay(1000);
-  lcd.clear();
-  lcd.print("Module No : 1");
-  lcd.setCursor(1,1);
-  lcd.print("Start Training");
+  // Initially, motor is stopped
+  digitalWrite(dirPin, LOW);
+  Serial.begin(9600);
 }
 
-void loop() {
- 
-  int reading = digitalRead(button);   // Read the state of the button:
+void loop()
+{
+  // Read the push button state
+  buttonState = digitalRead(buttonPin);
 
-  // Check if the button state has changed:
-  if (reading != lastButtonState) {
-    lastDebounceTime = millis();  // reset the debounce timer
+  // Check if button was pressed (button state changes from HIGH to LOW)
+  if (buttonState == LOW && lastButtonState == HIGH) {
+    // Toggle motor running state when button is pressed
+    motorRunning = !motorRunning;
+    digitalWrite(dirPin, HIGH);
+    count = count +1;
+    delay(200); // Simple debounce
   }
+  
+  // Read the anticlockwise push button state
+  anticlockwiseButtonState = digitalRead(anticlockwiseButtonPin);
 
-  // Only change the buttonState if the debounce delay has passed:
-  if ((millis() - lastDebounceTime) > debounceDelay) {
-    if (reading != buttonState) {
-      buttonState = reading;
+  // Check if anticlockwise button was pressed (button state changes from HIGH to LOW)
+  if (anticlockwiseButtonState == LOW && lastAnticlockwiseButtonState == HIGH) {
+    // Set motor direction to counterclockwise
+    motorRunning = !motorRunning;
+    digitalWrite(dirPin, LOW);  // Set direction to anticlockwise
+    count = count -1;
+    delay(200); // Simple debounce
+  }
+  
+  // Update the last button state
+  lastButtonState = buttonState;
+  lastAnticlockwiseButtonState = anticlockwiseButtonState;
 
-      // If the button is pressed, move the motor:
-      if (buttonState == HIGH) {
-        count = count +1;
-        if(count<7)
-        {
-          digitalWrite(dirPin, HIGH);  // Set direction to clockwise
-          digitalWrite(redled, HIGH);  
-          digitalWrite(greenled, LOW);  
-          lcd.clear();
-          lcd.print("Module changed");
-          lcd.setCursor(3,1);
-          lcd.print("Waiting....");
-          // Spin the stepper motor 1 revolution slowly:
-          for (int i = 0; i < stepsPerRevolution; i++) {
-            digitalWrite(stepPin, HIGH);
-            delayMicroseconds(8000);  // Adjust for desired motor speed
-            digitalWrite(stepPin, LOW);
-            delayMicroseconds(8000);
-          }
-        } 
+  if(count<6)
+  {
+  // If motorRunning is true, run the motor
+      if (motorRunning) {
+        // Set motor direction clockwise
+        
+        digitalWrite(redled, HIGH);  
+        digitalWrite(greenled, LOW);
+        Serial.println("Module changed");
+        // Spin motor slowly for one revolution
+        for (int x = 0; x < stepsPerRevolution; x++) {
+          digitalWrite(stepPin, HIGH);
+          delayMicroseconds(10000);  // Adjust speed here
+          digitalWrite(stepPin, LOW);
+          delayMicroseconds(10000);
+        }
+    
+        // Once motor completes a full revolution, stop
+        motorRunning = false;
       }
-      if (count ==6)
-      {
-        count = 1;
-        digitalWrite(redled, LOW);  
-        digitalWrite(greenled, HIGH);
-      }
-      else {
-        digitalWrite(redled, LOW);  
-        digitalWrite(greenled, HIGH); 
-        digitalWrite(dirPin, LOW);   // Set direction to counterclockwise
-        lcd.clear();
-        lcd.print("Module No :");
-        lcd.setCursor(12,0);
-        lcd.print(count);
-        lcd.setCursor(1,1);
-        lcd.print("Start Training");
-      }
+      else{
+          Serial.println(count);
+          Serial.println("Start Training");
+          digitalWrite(redled, LOW);  
+          digitalWrite(greenled, HIGH);
+        }
+        
+  }
+  else{
+    count = 1;
     }
-  }
-  lastButtonState = reading;
 }
